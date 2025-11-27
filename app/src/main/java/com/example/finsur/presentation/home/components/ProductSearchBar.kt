@@ -174,7 +174,7 @@ private fun SearchResultItem(
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            product.brandName?.let { brand ->
+            product.brand?.name?.let { brand ->
                 Text(
                     text = brand,
                     style = MaterialTheme.typography.bodySmall,
@@ -186,7 +186,7 @@ private fun SearchResultItem(
         Spacer(modifier = Modifier.width(8.dp))
 
         // Price
-        product.price?.let { price ->
+        product.skus?.firstOrNull()?.price?.let { price ->
             Text(
                 text = "$$price",
                 style = MaterialTheme.typography.bodyMedium,
