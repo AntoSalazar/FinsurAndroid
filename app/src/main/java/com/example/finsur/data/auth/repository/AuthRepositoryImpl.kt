@@ -1,5 +1,6 @@
 package com.example.finsur.data.auth.repository
 
+import com.example.finsur.core.auth.AuthStateManager
 import com.example.finsur.core.network.CookieJarImpl
 import com.example.finsur.data.auth.models.LoginRequest
 import com.example.finsur.data.auth.models.RegisterRequest
@@ -12,7 +13,8 @@ import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
     private val authApiService: AuthApiService,
-    private val cookieJar: CookieJarImpl
+    private val cookieJar: CookieJarImpl,
+    private val authStateManager: AuthStateManager
 ) : AuthRepository {
 
     override suspend fun login(email: String, password: String): Result<User> {
@@ -20,7 +22,13 @@ class AuthRepositoryImpl @Inject constructor(
             val response = authApiService.login(LoginRequest(email, password))
             if (response.isSuccessful) {
                 // After successful login, get user profile
-                getUserProfile()
+                val userResult = getUserProfile()
+                if (userResult is Result.Success) {
+                    // Save authentication state
+                    authStateManager.setAuthenticated(userResult.data.id, email)
+                    android.util.Log.d("AuthRepository", "Login successful, auth state saved")
+                }
+                userResult
             } else {
                 Result.Error(
                     Exception("Login failed"),
@@ -56,7 +64,13 @@ class AuthRepositoryImpl @Inject constructor(
             val response = authApiService.register(request)
             if (response.isSuccessful) {
                 // After successful registration, get user profile
-                getUserProfile()
+                val userResult = getUserProfile()
+                if (userResult is Result.Success) {
+                    // Save authentication state
+                    authStateManager.setAuthenticated(userResult.data.id, email)
+                    android.util.Log.d("AuthRepository", "Registration successful, auth state saved")
+                }
+                userResult
             } else {
                 Result.Error(
                     Exception("Registration failed"),
@@ -100,7 +114,13 @@ class AuthRepositoryImpl @Inject constructor(
             val response = authApiService.loginWithGoogle(request)
             if (response.isSuccessful) {
                 // After successful Google login, get user profile
-                getUserProfile()
+                val userResult = getUserProfile()
+                if (userResult is Result.Success) {
+                    // Save authentication state
+                    authStateManager.setAuthenticated(userResult.data.id, userResult.data.email)
+                    android.util.Log.d("AuthRepository", "Google login successful, auth state saved")
+                }
+                userResult
             } else {
                 Result.Error(
                     Exception("Google login failed"),
@@ -113,7 +133,9 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun logout() {
+        android.util.Log.d("AuthRepository", "Logging out - clearing cookies and auth state")
         cookieJar.clearCookies()
+        authStateManager.clearAuthentication()
     }
 
     private fun UserDto.toDomain(): User {

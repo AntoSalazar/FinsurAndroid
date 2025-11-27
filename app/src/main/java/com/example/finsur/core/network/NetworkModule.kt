@@ -7,6 +7,7 @@ import com.example.finsur.data.products.remote.ProductsApiService
 import com.example.finsur.data.categories.remote.CategoriesApiService
 import com.example.finsur.data.brands.remote.BrandsApiService
 import com.example.finsur.data.profile.remote.ProfileApiService
+import com.example.finsur.data.cart.remote.CartApiService
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
@@ -41,13 +42,23 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(cookieJar: CookieJarImpl): OkHttpClient {
+    fun provideAuthInterceptor(authStateManager: com.example.finsur.core.auth.AuthStateManager): AuthInterceptor {
+        return AuthInterceptor(authStateManager)
+    }
+
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(
+        cookieJar: CookieJarImpl,
+        authInterceptor: AuthInterceptor
+    ): OkHttpClient {
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
 
         return OkHttpClient.Builder()
             .cookieJar(cookieJar)
+            .addInterceptor(authInterceptor)
             .addInterceptor(loggingInterceptor)
             .connectTimeout(ApiConfig.CONNECT_TIMEOUT, TimeUnit.SECONDS)
             .readTimeout(ApiConfig.READ_TIMEOUT, TimeUnit.SECONDS)
@@ -97,5 +108,11 @@ object NetworkModule {
     @Singleton
     fun provideProfileApiService(retrofit: Retrofit): ProfileApiService {
         return retrofit.create(ProfileApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCartApiService(retrofit: Retrofit): CartApiService {
+        return retrofit.create(CartApiService::class.java)
     }
 }

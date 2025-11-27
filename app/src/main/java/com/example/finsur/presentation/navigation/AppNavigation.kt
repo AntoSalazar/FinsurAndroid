@@ -7,6 +7,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -17,6 +18,7 @@ import com.example.finsur.presentation.auth.register.RegisterScreen
 import com.example.finsur.presentation.auth.viewmodel.AuthUiState
 import com.example.finsur.presentation.auth.viewmodel.AuthViewModel
 import com.example.finsur.presentation.cart.CartScreen
+import com.example.finsur.presentation.cart.viewmodel.CartViewModel
 import com.example.finsur.presentation.components.BottomNavigationBar
 import com.example.finsur.presentation.home.HomeScreen
 import com.example.finsur.presentation.products.ProductsScreen
@@ -95,18 +97,32 @@ fun AppNavigation(
         composable(Screen.ProductDetail.route) { backStackEntry ->
             val productId = backStackEntry.arguments?.getString("productId")?.toIntOrNull()
             if (productId != null) {
+                // Get shared CartViewModel from parent NavHost
+                val parentEntry = navController.getBackStackEntry(Screen.Home.route)
+                val sharedCartViewModel: CartViewModel = hiltViewModel(parentEntry)
+
                 com.example.finsur.presentation.products.ProductDetailScreen(
                     productId = productId,
                     onNavigateBack = {
                         navController.popBackStack()
-                    }
+                    },
+                    cartViewModel = sharedCartViewModel
                 )
             }
         }
 
         composable(Screen.Cart.route) {
+            // Get shared CartViewModel from parent NavHost
+            val parentEntry = navController.getBackStackEntry(Screen.Home.route)
+            val sharedCartViewModel: CartViewModel = hiltViewModel(parentEntry)
+
             MainScaffold(navController) {
-                CartScreen()
+                CartScreen(
+                    onNavigateToProductDetail = { productId ->
+                        navController.navigate(Screen.ProductDetail.createRoute(productId))
+                    },
+                    viewModel = sharedCartViewModel
+                )
             }
         }
 

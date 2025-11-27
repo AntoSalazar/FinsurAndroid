@@ -5,11 +5,13 @@ import com.example.finsur.data.products.repository.ProductsRepositoryImpl
 import com.example.finsur.data.categories.repository.CategoriesRepositoryImpl
 import com.example.finsur.data.brands.repository.BrandsRepositoryImpl
 import com.example.finsur.data.profile.repository.ProfileRepositoryImpl
+import com.example.finsur.data.cart.repository.CartRepositoryImpl
 import com.example.finsur.domain.auth.repository.AuthRepository
 import com.example.finsur.domain.products.repository.ProductsRepository
 import com.example.finsur.domain.categories.repository.CategoriesRepository
 import com.example.finsur.domain.brands.repository.BrandsRepository
 import com.example.finsur.domain.profile.repository.ProfileRepository
+import com.example.finsur.domain.cart.repository.CartRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -49,4 +51,10 @@ abstract class RepositoryModule {
     abstract fun bindProfileRepository(
         profileRepositoryImpl: ProfileRepositoryImpl
     ): ProfileRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindCartRepository(
+        cartRepositoryImpl: CartRepositoryImpl
+    ): CartRepository
 }

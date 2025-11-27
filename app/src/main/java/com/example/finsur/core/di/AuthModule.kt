@@ -1,6 +1,7 @@
 package com.example.finsur.core.di
 
 import android.content.Context
+import com.example.finsur.core.auth.AuthStateManager
 import com.example.finsur.core.auth.GoogleAuthManager
 import dagger.Module
 import dagger.Provides
@@ -19,5 +20,13 @@ object AuthModule {
         @ApplicationContext context: Context
     ): GoogleAuthManager {
         return GoogleAuthManager(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAuthStateManager(
+        @ApplicationContext context: Context
+    ): AuthStateManager {
+        return AuthStateManager(context)
     }
 }
