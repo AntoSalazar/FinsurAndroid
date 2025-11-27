@@ -98,7 +98,7 @@ fun HomeScreen(
                             CategoryCard(
                                 category = category,
                                 onClick = { onNavigateToCategoryProducts(category.slug) },
-                                modifier = Modifier.width(160.dp)
+                                modifier = Modifier.width(180.dp)
                             )
                         }
                     }
