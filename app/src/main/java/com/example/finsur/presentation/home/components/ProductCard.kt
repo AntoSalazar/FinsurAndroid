@@ -20,8 +20,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.example.finsur.domain.products.models.Product
+import com.example.finsur.presentation.components.ImageFromUrl
 
 @Composable
 fun ProductCard(
@@ -43,8 +43,8 @@ fun ProductCard(
             modifier = Modifier.padding(12.dp)
         ) {
             // Product Image
-            AsyncImage(
-                model = product.cover,
+            ImageFromUrl(
+                imageUrl = product.cover,
                 contentDescription = product.name,
                 modifier = Modifier
                     .fillMaxWidth()

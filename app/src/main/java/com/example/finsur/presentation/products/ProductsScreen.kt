@@ -21,8 +21,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
 import com.example.finsur.domain.products.models.Product
+import com.example.finsur.presentation.components.ImageFromUrl
 import com.example.finsur.presentation.products.viewmodel.ProductsUiState
 import com.example.finsur.presentation.products.viewmodel.ProductsViewModel
 
@@ -228,8 +228,8 @@ fun ProductCard(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Product Image
-            AsyncImage(
-                model = product.cover,
+            ImageFromUrl(
+                imageUrl = product.cover,
                 contentDescription = product.name,
                 modifier = Modifier
                     .size(100.dp)

@@ -17,8 +17,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.example.finsur.domain.categories.models.Category
+import com.example.finsur.presentation.components.ImageFromUrl
 
 @Composable
 fun CategoryCard(
@@ -40,15 +40,13 @@ fun CategoryCard(
             modifier = Modifier.fillMaxSize()
         ) {
             // Category Image
-            category.imageUrl?.let { imageUrl ->
-                AsyncImage(
-                    model = imageUrl,
-                    contentDescription = category.name,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                    alpha = 0.3f
-                )
-            }
+            ImageFromUrl(
+                imageUrl = category.imageUrl,
+                contentDescription = category.name,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+                alpha = 0.3f
+            )
 
             // Category Name Overlay
             Box(

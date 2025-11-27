@@ -30,8 +30,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.example.finsur.domain.products.models.Product
+import com.example.finsur.presentation.components.ImageFromUrl
 import com.example.finsur.presentation.home.viewmodel.SearchState
 
 @Composable
@@ -152,8 +152,8 @@ private fun SearchResultItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Product Image
-        AsyncImage(
-            model = product.cover,
+        ImageFromUrl(
+            imageUrl = product.cover,
             contentDescription = product.name,
             modifier = Modifier.size(48.dp),
             contentScale = ContentScale.Crop
