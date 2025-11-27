@@ -5,13 +5,21 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
@@ -37,6 +45,7 @@ import com.example.finsur.presentation.profile.viewmodel.ProfileViewModel
 
 @Composable
 fun ProfileScreen(
+    onNavigateToLogin: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
@@ -66,6 +75,11 @@ fun ProfileScreen(
                     lastName = profile.lastName,
                     email = profile.email,
                     profilePictureUrl = profile.profilePictureUrl,
+                    onLogout = {
+                        viewModel.logout {
+                            onNavigateToLogin()
+                        }
+                    },
                     modifier = Modifier.padding(16.dp)
                 )
 
@@ -143,6 +157,7 @@ private fun ProfileHeader(
     lastName: String,
     email: String,
     profilePictureUrl: String?,
+    onLogout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -160,5 +175,23 @@ private fun ProfileHeader(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Logout Button
+        OutlinedButton(
+            onClick = onLogout,
+            modifier = Modifier.fillMaxWidth(0.6f),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = MaterialTheme.colorScheme.error
+            )
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.Logout,
+                contentDescription = "Cerrar sesión"
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Cerrar Sesión")
+        }
     }
 }

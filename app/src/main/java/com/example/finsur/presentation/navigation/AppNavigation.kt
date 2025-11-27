@@ -112,7 +112,13 @@ fun AppNavigation(
 
         composable(Screen.Profile.route) {
             MainScaffold(navController) {
-                RealProfileScreen()
+                RealProfileScreen(
+                    onNavigateToLogin = {
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                )
             }
         }
     }

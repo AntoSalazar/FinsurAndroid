@@ -2,6 +2,7 @@ package com.example.finsur.presentation.profile.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.finsur.domain.auth.usecases.LogoutUseCase
 import com.example.finsur.domain.common.Result
 import com.example.finsur.domain.profile.usecases.ChangePasswordUseCase
 import com.example.finsur.domain.profile.usecases.CreateAddressUseCase
@@ -31,7 +32,8 @@ class ProfileViewModel @Inject constructor(
     private val updateAddressUseCase: UpdateAddressUseCase,
     private val setDefaultAddressUseCase: SetDefaultAddressUseCase,
     private val deleteAddressUseCase: DeleteAddressUseCase,
-    private val changePasswordUseCase: ChangePasswordUseCase
+    private val changePasswordUseCase: ChangePasswordUseCase,
+    private val logoutUseCase: LogoutUseCase
 ) : ViewModel() {
 
     // Profile state
@@ -373,5 +375,19 @@ class ProfileViewModel @Inject constructor(
 
     fun clearUpdateState() {
         _updateState.value = UpdateState.Idle
+    }
+
+    fun logout(onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            when (val result = logoutUseCase()) {
+                is Result.Success<*> -> {
+                    onSuccess()
+                }
+                is Result.Error -> {
+                    // Even if logout fails, we should navigate to login
+                    onSuccess()
+                }
+            }
+        }
     }
 }
