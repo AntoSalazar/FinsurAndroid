@@ -379,15 +379,8 @@ class ProfileViewModel @Inject constructor(
 
     fun logout(onSuccess: () -> Unit) {
         viewModelScope.launch {
-            when (val result = logoutUseCase()) {
-                is Result.Success<*> -> {
-                    onSuccess()
-                }
-                is Result.Error -> {
-                    // Even if logout fails, we should navigate to login
-                    onSuccess()
-                }
-            }
+            logoutUseCase()
+            onSuccess()
         }
     }
 }
