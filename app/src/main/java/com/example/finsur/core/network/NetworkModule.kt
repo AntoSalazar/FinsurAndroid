@@ -8,6 +8,8 @@ import com.example.finsur.data.categories.remote.CategoriesApiService
 import com.example.finsur.data.brands.remote.BrandsApiService
 import com.example.finsur.data.profile.remote.ProfileApiService
 import com.example.finsur.data.cart.remote.CartApiService
+import com.example.finsur.data.checkout.remote.WarehouseApiService
+import com.example.finsur.data.checkout.remote.CheckoutApiService
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
@@ -114,5 +116,17 @@ object NetworkModule {
     @Singleton
     fun provideCartApiService(retrofit: Retrofit): CartApiService {
         return retrofit.create(CartApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWarehouseApiService(retrofit: Retrofit): WarehouseApiService {
+        return retrofit.create(WarehouseApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCheckoutApiService(retrofit: Retrofit): CheckoutApiService {
+        return retrofit.create(CheckoutApiService::class.java)
     }
 }

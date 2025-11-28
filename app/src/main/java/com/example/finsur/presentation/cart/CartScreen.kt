@@ -32,6 +32,7 @@ import com.example.finsur.presentation.components.ImageFromUrl
 @Composable
 fun CartScreen(
     onNavigateToProductDetail: (Int) -> Unit = {},
+    onNavigateToCheckout: () -> Unit = {},
     viewModel: CartViewModel = hiltViewModel(),
     modifier: Modifier = Modifier
 ) {
@@ -94,6 +95,7 @@ fun CartScreen(
                         viewModel.removeItem(itemId)
                     },
                     onNavigateToProductDetail = onNavigateToProductDetail,
+                    onNavigateToCheckout = onNavigateToCheckout,
                     modifier = Modifier.padding(paddingValues)
                 )
             }
@@ -131,6 +133,7 @@ private fun CartContent(
     onDecreaseQuantity: (Int, Int) -> Unit,
     onRemoveItem: (Int) -> Unit,
     onNavigateToProductDetail: (Int) -> Unit,
+    onNavigateToCheckout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (cart.items.isEmpty()) {
@@ -177,7 +180,10 @@ private fun CartContent(
             }
 
             // Cart Summary
-            CartSummary(cart = cart)
+            CartSummary(
+                cart = cart,
+                onNavigateToCheckout = onNavigateToCheckout
+            )
         }
     }
 }
@@ -294,6 +300,7 @@ private fun CartItemCard(
 @Composable
 private fun CartSummary(
     cart: Cart,
+    onNavigateToCheckout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -341,7 +348,7 @@ private fun CartSummary(
             )
 
             Button(
-                onClick = { /* TODO: Navigate to checkout */ },
+                onClick = onNavigateToCheckout,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp),

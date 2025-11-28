@@ -91,6 +91,10 @@ dependencies {
     // Coil (Image Loading)
     implementation(libs.coil.compose)
 
+    // Stripe Android SDK
+    implementation("com.stripe:stripe-android:22.2.0")
+    implementation("com.stripe:financial-connections:22.2.0")
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

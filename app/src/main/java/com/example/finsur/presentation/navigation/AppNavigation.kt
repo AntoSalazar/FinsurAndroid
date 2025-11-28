@@ -3,6 +3,7 @@ package com.example.finsur.presentation.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -19,10 +20,14 @@ import com.example.finsur.presentation.auth.viewmodel.AuthUiState
 import com.example.finsur.presentation.auth.viewmodel.AuthViewModel
 import com.example.finsur.presentation.cart.CartScreen
 import com.example.finsur.presentation.cart.viewmodel.CartViewModel
+import com.example.finsur.presentation.checkout.CheckoutScreen
+import com.example.finsur.presentation.checkout.PaymentSuccessScreen
 import com.example.finsur.presentation.components.BottomNavigationBar
 import com.example.finsur.presentation.home.HomeScreen
 import com.example.finsur.presentation.products.ProductsScreen
 import com.example.finsur.presentation.profile.ProfileScreen as RealProfileScreen
+import com.example.finsur.presentation.profile.viewmodel.ProfileViewModel
+import com.example.finsur.presentation.profile.viewmodel.AddressesState
 
 @Composable
 fun AppNavigation(
@@ -121,9 +126,52 @@ fun AppNavigation(
                     onNavigateToProductDetail = { productId ->
                         navController.navigate(Screen.ProductDetail.createRoute(productId))
                     },
+                    onNavigateToCheckout = {
+                        navController.navigate(Screen.Checkout.route)
+                    },
                     viewModel = sharedCartViewModel
                 )
             }
+        }
+
+        composable(Screen.Checkout.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            val addressesState by profileViewModel.addressesState.collectAsState()
+
+            // Load addresses when checkout screen is opened
+            LaunchedEffect(Unit) {
+                profileViewModel.loadAddresses()
+            }
+
+            val addresses = when (val state = addressesState) {
+                is AddressesState.Success -> state.addresses
+                else -> emptyList()
+            }
+
+            CheckoutScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onPaymentSuccess = { orderNumber ->
+                    // Navigate to success screen
+                    navController.navigate(Screen.PaymentSuccess.createRoute(orderNumber)) {
+                        popUpTo(Screen.Home.route) { inclusive = false }
+                    }
+                },
+                userAddresses = addresses
+            )
+        }
+
+        composable(Screen.PaymentSuccess.route) { backStackEntry ->
+            val orderNumber = backStackEntry.arguments?.getString("orderNumber")
+            PaymentSuccessScreen(
+                orderNumber = orderNumber,
+                onNavigateToHome = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) { inclusive = true }
+                    }
+                }
+            )
         }
 
         composable(Screen.Profile.route) {

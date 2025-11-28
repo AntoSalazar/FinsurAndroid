@@ -6,12 +6,16 @@ import com.example.finsur.data.categories.repository.CategoriesRepositoryImpl
 import com.example.finsur.data.brands.repository.BrandsRepositoryImpl
 import com.example.finsur.data.profile.repository.ProfileRepositoryImpl
 import com.example.finsur.data.cart.repository.CartRepositoryImpl
+import com.example.finsur.data.checkout.repository.WarehouseRepositoryImpl
+import com.example.finsur.data.checkout.repository.CheckoutRepositoryImpl
 import com.example.finsur.domain.auth.repository.AuthRepository
 import com.example.finsur.domain.products.repository.ProductsRepository
 import com.example.finsur.domain.categories.repository.CategoriesRepository
 import com.example.finsur.domain.brands.repository.BrandsRepository
 import com.example.finsur.domain.profile.repository.ProfileRepository
 import com.example.finsur.domain.cart.repository.CartRepository
+import com.example.finsur.domain.checkout.repository.WarehouseRepository
+import com.example.finsur.domain.checkout.repository.CheckoutRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -57,4 +61,16 @@ abstract class RepositoryModule {
     abstract fun bindCartRepository(
         cartRepositoryImpl: CartRepositoryImpl
     ): CartRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindWarehouseRepository(
+        warehouseRepositoryImpl: WarehouseRepositoryImpl
+    ): WarehouseRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindCheckoutRepository(
+        checkoutRepositoryImpl: CheckoutRepositoryImpl
+    ): CheckoutRepository
 }
