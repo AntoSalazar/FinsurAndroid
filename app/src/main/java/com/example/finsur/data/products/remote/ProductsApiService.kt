@@ -31,4 +31,9 @@ interface ProductsApiService {
     suspend fun getProductById(
         @Path("id") productId: Int
     ): Response<ProductDto>
+
+    @GET("products/category/{categoryId}")
+    suspend fun getProductsByCategory(
+        @Path("categoryId") categoryId: Int
+    ): Response<List<ProductDto>>
 }

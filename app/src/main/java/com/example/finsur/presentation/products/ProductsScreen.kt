@@ -3,11 +3,14 @@ package com.example.finsur.presentation.products
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -21,45 +24,147 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.finsur.domain.categories.models.Category
+import com.example.finsur.domain.categories.repository.CategoriesRepository
+import com.example.finsur.domain.common.Result
 import com.example.finsur.domain.products.models.Product
+import com.example.finsur.domain.products.repository.ProductsRepository
 import com.example.finsur.presentation.components.ImageFromUrl
-import com.example.finsur.presentation.products.viewmodel.ProductsUiState
-import com.example.finsur.presentation.products.viewmodel.ProductsViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class ProductsViewModel2 @Inject constructor(
+    private val productsRepository: ProductsRepository,
+    private val categoriesRepository: CategoriesRepository
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow<ProductsUiState2>(ProductsUiState2.Loading)
+    val uiState: StateFlow<ProductsUiState2> = _uiState.asStateFlow()
+
+    private val _categories = MutableStateFlow<List<Category>>(emptyList())
+    val categories: StateFlow<List<Category>> = _categories.asStateFlow()
+
+    private val _selectedCategory = MutableStateFlow<Int?>(null)
+    val selectedCategory: StateFlow<Int?> = _selectedCategory.asStateFlow()
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    init {
+        loadCategories()
+        loadProducts()
+    }
+
+    private fun loadCategories() {
+        viewModelScope.launch {
+            when (val result = categoriesRepository.getAllCategories()) {
+                is Result.Success -> {
+                    _categories.value = result.data
+                }
+                is Result.Error -> {
+                    // Handle error silently or show toast
+                }
+            }
+        }
+    }
+
+    fun loadProducts() {
+        viewModelScope.launch {
+            _uiState.value = ProductsUiState2.Loading
+
+            val result = if (_selectedCategory.value != null) {
+                productsRepository.getProductsByCategory(_selectedCategory.value!!)
+            } else {
+                val paginatedResult = productsRepository.getProducts(1, 100)
+                when (paginatedResult) {
+                    is Result.Success -> Result.Success(paginatedResult.data.products)
+                    is Result.Error -> Result.Error(paginatedResult.exception, paginatedResult.message)
+                }
+            }
+
+            _uiState.value = when (result) {
+                is Result.Success -> ProductsUiState2.Success(result.data)
+                is Result.Error -> ProductsUiState2.Error(result.message ?: "Error al cargar productos")
+            }
+        }
+    }
+
+    fun selectCategory(categoryId: Int?) {
+        _selectedCategory.value = categoryId
+        loadProducts()
+    }
+
+    fun searchProducts(query: String) {
+        _searchQuery.value = query
+        if (query.isEmpty()) {
+            loadProducts()
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.value = ProductsUiState2.Loading
+            val result = productsRepository.searchProducts(query, 1, 100)
+            _uiState.value = when (result) {
+                is Result.Success -> ProductsUiState2.Success(result.data)
+                is Result.Error -> ProductsUiState2.Error(result.message ?: "Error al buscar productos")
+            }
+        }
+    }
+
+    fun clearSearch() {
+        _searchQuery.value = ""
+        loadProducts()
+    }
+}
+
+sealed class ProductsUiState2 {
+    object Loading : ProductsUiState2()
+    data class Success(val products: List<Product>) : ProductsUiState2()
+    data class Error(val message: String) : ProductsUiState2()
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductsScreen(
     onNavigateToProductDetail: (Int) -> Unit = {},
-    viewModel: ProductsViewModel = hiltViewModel(),
+    viewModel: ProductsViewModel2 = hiltViewModel(),
     modifier: Modifier = Modifier
 ) {
-    val productsUiState by viewModel.productsUiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val categories by viewModel.categories.collectAsState()
+    val selectedCategory by viewModel.selectedCategory.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
-    val listState = rememberLazyListState()
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Search Bar - Always visible
+        // Header with Search
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            tonalElevation = 2.dp,
-            shadowElevation = 4.dp
+            tonalElevation = 0.dp,
+            color = MaterialTheme.colorScheme.background
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface)
-                    .padding(16.dp)
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 16.dp, bottom = 12.dp)
             ) {
                 Text(
                     text = "Productos",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(bottom = 12.dp)
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(bottom = 16.dp)
                 )
 
                 OutlinedTextField(
@@ -70,7 +175,8 @@ fun ProductsScreen(
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Search,
-                            contentDescription = "Buscar"
+                            contentDescription = "Buscar",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     },
                     trailingIcon = {
@@ -84,18 +190,66 @@ fun ProductsScreen(
                         }
                     },
                     singleLine = true,
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(16.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                        focusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
                     )
                 )
             }
         }
 
-        // Products List
-        when (val state = productsUiState) {
-            is ProductsUiState.Initial -> {
+        // Category Chips
+        if (categories.isNotEmpty()) {
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // "Todos" chip
+                item {
+                    FilterChip(
+                        selected = selectedCategory == null,
+                        onClick = { viewModel.selectCategory(null) },
+                        label = {
+                            Text(
+                                "Todos",
+                                style = MaterialTheme.typography.labelLarge
+                            )
+                        },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                        )
+                    )
+                }
+
+                items(categories) { category ->
+                    FilterChip(
+                        selected = selectedCategory == category.id,
+                        onClick = { viewModel.selectCategory(category.id) },
+                        label = {
+                            Text(
+                                category.name,
+                                style = MaterialTheme.typography.labelLarge
+                            )
+                        },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                        )
+                    )
+                }
+            }
+        }
+
+        // Products Grid
+        when (val state = uiState) {
+            is ProductsUiState2.Loading -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -103,15 +257,7 @@ fun ProductsScreen(
                     CircularProgressIndicator()
                 }
             }
-            is ProductsUiState.Loading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            }
-            is ProductsUiState.Success -> {
+            is ProductsUiState2.Success -> {
                 if (state.products.isEmpty()) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -137,53 +283,23 @@ fun ProductsScreen(
                         }
                     }
                 } else {
-                    LazyColumn(
-                        state = listState,
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(state.products) { product ->
-                            ProductCard(
+                            ModernProductCard(
                                 product = product,
                                 onClick = { onNavigateToProductDetail(product.id) }
-                            )
-                        }
-
-                        // Load More
-                        if (state.hasMore) {
-                            item {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Button(
-                                        onClick = { viewModel.loadMore() },
-                                        modifier = Modifier.fillMaxWidth(0.5f)
-                                    ) {
-                                        Text("Cargar más")
-                                    }
-                                }
-                            }
-                        }
-
-                        // Pagination info
-                        item {
-                            Text(
-                                text = "Mostrando ${state.products.size} de ${state.total} productos",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 8.dp)
                             )
                         }
                     }
                 }
             }
-            is ProductsUiState.Error -> {
+            is ProductsUiState2.Error -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -198,7 +314,7 @@ fun ProductsScreen(
                             color = MaterialTheme.colorScheme.error,
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
-                        Button(onClick = { viewModel.loadProducts(1) }) {
+                        Button(onClick = { viewModel.loadProducts() }) {
                             Text("Reintentar")
                         }
                     }
@@ -209,7 +325,7 @@ fun ProductsScreen(
 }
 
 @Composable
-fun ProductCard(
+fun ModernProductCard(
     product: Product,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -218,94 +334,75 @@ fun ProductCard(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        shape = RoundedCornerShape(12.dp)
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp,
+            pressedElevation = 8.dp
+        ),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        Column(
+            modifier = Modifier.padding(12.dp)
         ) {
             // Product Image
-            ImageFromUrl(
-                imageUrl = product.cover,
-                contentDescription = product.name,
+            Box(
                 modifier = Modifier
-                    .size(100.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentScale = ContentScale.Crop
+                    .fillMaxWidth()
+                    .height(140.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                ImageFromUrl(
+                    imageUrl = product.cover,
+                    contentDescription = product.name,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Brand Name
+            product.brand?.name?.let { brandName ->
+                Text(
+                    text = brandName.uppercase(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+
+            // Product Name
+            Text(
+                text = product.name,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onSurface,
+                minLines = 2,
+                modifier = Modifier.height(40.dp)
             )
 
-            // Product Info
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight(),
-                verticalArrangement = Arrangement.SpaceBetween
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Arrow Icon (Like in the design)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
-                    Text(
-                        text = product.name,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-
-                    product.summary?.let { summary ->
-                        Text(
-                            text = summary,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    }
-
-                    product.brand?.name?.let { brandName ->
-                        Text(
-                            text = brandName,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    }
-                }
-
-                // Price
-                product.skus?.firstOrNull()?.let { sku ->
-                    Row(
-                        verticalAlignment = Alignment.Bottom,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        if (sku.salePrice != null) {
-                            Text(
-                                text = "$${sku.salePrice}",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Text(
-                                text = "$${sku.price}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough
-                            )
-                        } else {
-                            Text(
-                                text = "$${sku.price}",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-                }
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = "Ver detalle",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
+                )
             }
         }
     }

@@ -7,7 +7,7 @@ object ApiConfig {
     // For production: https://your-api.com
     //const val BASE_URL = "http://192.168.141.92:3000/api/v1/"
 
-    const val BASE_URL = "https://b70bb276640b.ngrok-free.app/api/v1/"
+    const val BASE_URL = "https://151be3ab64c9.ngrok-free.app/api/v1/"
 
     // Timeout configurations
     const val CONNECT_TIMEOUT = 30L

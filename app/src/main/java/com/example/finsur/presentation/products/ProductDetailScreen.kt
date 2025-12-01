@@ -15,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -141,6 +142,11 @@ fun ProductDetailContent(
     }
     var quantity by remember { mutableIntStateOf(1) }
 
+    // Reset quantity when SKU changes
+    LaunchedEffect(selectedSku) {
+        quantity = 1
+    }
+
     Box(modifier = modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -241,7 +247,7 @@ fun ProductDetailContent(
                     }
                 }
 
-                // Price Section
+                // Price & Stock Section
                 selectedSku?.let { sku ->
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -304,6 +310,43 @@ fun ProductDetailContent(
                                 }
                             }
 
+                            // Stock Badge
+                            val stockColor = when {
+                                sku.totalStock == 0 -> MaterialTheme.colorScheme.error
+                                sku.totalStock < 5 -> MaterialTheme.colorScheme.tertiary
+                                else -> Color(0xFF4CAF50)
+                            }
+
+                            val stockText = when {
+                                sku.totalStock == 0 -> "Agotado"
+                                sku.totalStock < 5 -> "Últimas ${sku.totalStock} unidades"
+                                else -> "${sku.totalStock} disponibles"
+                            }
+
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = stockColor.copy(alpha = 0.15f),
+                                modifier = Modifier.padding(top = 4.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .background(stockColor, shape = RoundedCornerShape(4.dp))
+                                    )
+                                    Text(
+                                        text = stockText,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = stockColor,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                            }
+
                             if (sku.weight != null && sku.weightUnit != null) {
                                 Text(
                                     text = "Peso: ${sku.weight} ${sku.weightUnit}",
@@ -316,58 +359,79 @@ fun ProductDetailContent(
                 }
 
                 // Quantity Selector
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = "Cantidad",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
+                selectedSku?.let { sku ->
+                    val maxQuantity = sku.totalStock
+                    val canAddMore = quantity < maxQuantity
 
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            modifier = Modifier.fillMaxWidth()
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            IconButton(
-                                onClick = { if (quantity > 1) quantity-- },
-                                enabled = quantity > 1
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Remove,
-                                    contentDescription = "Disminuir cantidad",
-                                    tint = if (quantity > 1) MaterialTheme.colorScheme.primary
-                                           else MaterialTheme.colorScheme.onSurfaceVariant
+                                Text(
+                                    text = "Cantidad",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
+                                if (maxQuantity > 0 && maxQuantity < 10) {
+                                    Text(
+                                        text = "Máx: $maxQuantity",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
 
-                            Text(
-                                text = quantity.toString(),
-                                style = MaterialTheme.typography.headlineMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.weight(1f),
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-
-                            IconButton(
-                                onClick = { quantity++ }
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                modifier = Modifier.fillMaxWidth()
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Add,
-                                    contentDescription = "Aumentar cantidad",
-                                    tint = MaterialTheme.colorScheme.primary
+                                IconButton(
+                                    onClick = { if (quantity > 1) quantity-- },
+                                    enabled = quantity > 1 && maxQuantity > 0
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Remove,
+                                        contentDescription = "Disminuir cantidad",
+                                        tint = if (quantity > 1 && maxQuantity > 0)
+                                               MaterialTheme.colorScheme.primary
+                                               else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+
+                                Text(
+                                    text = quantity.toString(),
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.weight(1f),
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
                                 )
+
+                                IconButton(
+                                    onClick = { if (canAddMore) quantity++ },
+                                    enabled = canAddMore
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = "Aumentar cantidad",
+                                        tint = if (canAddMore) MaterialTheme.colorScheme.primary
+                                               else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
                         }
                     }
@@ -498,19 +562,34 @@ fun ProductDetailContent(
 
         // Floating Add to Cart Button
         selectedSku?.let { sku ->
+            val hasStock = sku.totalStock > 0
+
             ExtendedFloatingActionButton(
-                onClick = { onAddToCart(sku, quantity) },
+                onClick = { if (hasStock) onAddToCart(sku, quantity) },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(16.dp),
-                containerColor = MaterialTheme.colorScheme.primary
+                containerColor = if (hasStock)
+                    MaterialTheme.colorScheme.primary
+                else
+                    MaterialTheme.colorScheme.surfaceVariant
             ) {
                 Icon(
                     imageVector = Icons.Default.ShoppingCart,
-                    contentDescription = "Agregar al carrito"
+                    contentDescription = "Agregar al carrito",
+                    tint = if (hasStock)
+                        MaterialTheme.colorScheme.onPrimary
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Agregar al Carrito")
+                Text(
+                    text = if (hasStock) "Agregar al Carrito" else "Sin Stock",
+                    color = if (hasStock)
+                        MaterialTheme.colorScheme.onPrimary
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }

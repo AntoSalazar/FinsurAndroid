@@ -107,6 +107,23 @@ class ProductsRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getProductsByCategory(categoryId: Int): Result<List<Product>> {
+        return try {
+            val response = apiService.getProductsByCategory(categoryId)
+            if (response.isSuccessful) {
+                val products = response.body()?.map { it.toDomain() } ?: emptyList()
+                Result.Success(products)
+            } else {
+                Result.Error(
+                    Exception("Failed to get products by category: ${response.code()}"),
+                    "Error al cargar productos"
+                )
+            }
+        } catch (e: Exception) {
+            Result.Error(e, "Error de conexión al cargar productos")
+        }
+    }
+
     private fun ProductDto.toDomain() = Product(
         id = id,
         name = name,
@@ -152,6 +169,7 @@ class ProductsRepositoryImpl @Inject constructor(
         salePrice = salePrice,
         isActive = isActive,
         weight = weight,
-        weightUnit = weightUnit
+        weightUnit = weightUnit,
+        totalStock = inventoryItems?.sumOf { it.quantity } ?: 0
     )
 }

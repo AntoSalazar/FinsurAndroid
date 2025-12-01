@@ -1,7 +1,16 @@
 package com.example.finsur.presentation.navigation
 
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -25,10 +34,16 @@ import com.example.finsur.presentation.checkout.PaymentSuccessScreen
 import com.example.finsur.presentation.components.BottomNavigationBar
 import com.example.finsur.presentation.home.HomeScreen
 import com.example.finsur.presentation.products.ProductsScreen
+import com.example.finsur.presentation.profile.ProfileDashboardScreen
+import com.example.finsur.presentation.profile.ModernProfileScreen
 import com.example.finsur.presentation.profile.ProfileScreen as RealProfileScreen
+import com.example.finsur.presentation.profile.components.AddressesTab
+import com.example.finsur.presentation.profile.components.FiscalInfoTab
 import com.example.finsur.presentation.profile.viewmodel.ProfileViewModel
 import com.example.finsur.presentation.profile.viewmodel.AddressesState
+import com.example.finsur.presentation.orders.OrderDetailScreen
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation(
     navController: NavHostController = rememberNavController(),
@@ -78,12 +93,13 @@ fun AppNavigation(
                         navController.navigate(Screen.ProductDetail.createRoute(productId))
                     },
                     onNavigateToCategoryProducts = { categorySlug ->
-                        // TODO: Navigate to category products screen
-                        // navController.navigate(Screen.CategoryProducts.createRoute(categorySlug))
+                        navController.navigate(Screen.Products.route)
                     },
                     onNavigateToBrandProducts = { brandSlug ->
-                        // TODO: Navigate to brand products screen
-                        // navController.navigate(Screen.BrandProducts.createRoute(brandSlug))
+                        navController.navigate(Screen.Products.route)
+                    },
+                    onNavigateToSearch = {
+                        navController.navigate(Screen.Products.route)
                     }
                 )
             }
@@ -176,11 +192,123 @@ fun AppNavigation(
 
         composable(Screen.Profile.route) {
             MainScaffold(navController) {
-                RealProfileScreen(
+                ProfileDashboardScreen(
+                    onNavigateToOrders = {
+                        navController.navigate("orders")
+                    },
+                    onNavigateToProfile = {
+                        navController.navigate("profile_edit")
+                    },
+                    onNavigateToAddresses = {
+                        navController.navigate("addresses")
+                    },
+                    onNavigateToFiscalData = {
+                        navController.navigate("fiscal_data")
+                    },
                     onNavigateToLogin = {
                         navController.navigate(Screen.Login.route) {
                             popUpTo(0) { inclusive = true }
                         }
+                    }
+                )
+            }
+        }
+
+        // Orders Screen
+        composable("orders") {
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text("Mis Pedidos") },
+                        navigationIcon = {
+                            IconButton(onClick = { navController.popBackStack() }) {
+                                Icon(Icons.Default.ArrowBack, "Volver")
+                            }
+                        }
+                    )
+                }
+            ) { padding ->
+                ModernProfileScreen(
+                    onNavigateToLogin = {},
+                    onNavigateToOrderDetail = { orderId ->
+                        navController.navigate(Screen.OrderDetail.createRoute(orderId))
+                    },
+                    modifier = Modifier.padding(padding)
+                )
+            }
+        }
+
+        // Profile Edit Screen
+        composable("profile_edit") {
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text("Mi Perfil") },
+                        navigationIcon = {
+                            IconButton(onClick = { navController.popBackStack() }) {
+                                Icon(Icons.Default.ArrowBack, "Volver")
+                            }
+                        }
+                    )
+                }
+            ) { padding ->
+                RealProfileScreen(
+                    onNavigateToLogin = {},
+                    modifier = Modifier.padding(padding)
+                )
+            }
+        }
+
+        // Addresses Screen
+        composable("addresses") {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text("Mis Direcciones") },
+                        navigationIcon = {
+                            IconButton(onClick = { navController.popBackStack() }) {
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver")
+                            }
+                        }
+                    )
+                }
+            ) { padding ->
+                Box(modifier = Modifier.padding(padding)) {
+                    AddressesTab(viewModel = profileViewModel)
+                }
+            }
+        }
+
+        // Fiscal Data Screen
+        composable("fiscal_data") {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text("Datos Fiscales") },
+                        navigationIcon = {
+                            IconButton(onClick = { navController.popBackStack() }) {
+                                Icon(Icons.Default.ArrowBack, "Volver")
+                            }
+                        }
+                    )
+                }
+            ) { padding ->
+                Box(modifier = Modifier.padding(padding)) {
+                    FiscalInfoTab(viewModel = profileViewModel)
+                }
+            }
+        }
+
+        // Order Detail Screen
+        composable(Screen.OrderDetail.route) { backStackEntry ->
+            val orderId = backStackEntry.arguments?.getString("orderId")?.toIntOrNull()
+            if (orderId != null) {
+                OrderDetailScreen(
+                    orderId = orderId,
+                    onNavigateBack = {
+                        navController.popBackStack()
                     }
                 )
             }

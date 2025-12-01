@@ -28,6 +28,23 @@ class CategoriesRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getAllCategories(): Result<List<Category>> {
+        return try {
+            val response = apiService.getAllCategories()
+            if (response.isSuccessful) {
+                val categories = response.body()?.map { it.toDomain() } ?: emptyList()
+                Result.Success(categories)
+            } else {
+                Result.Error(
+                    Exception("Failed to get categories: ${response.code()}"),
+                    "Error al cargar categorías"
+                )
+            }
+        } catch (e: Exception) {
+            Result.Error(e, "Error de conexión al cargar categorías")
+        }
+    }
+
     private fun CategoryDto.toDomain() = Category(
         id = id,
         name = name,

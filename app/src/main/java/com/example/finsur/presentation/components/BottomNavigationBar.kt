@@ -73,13 +73,14 @@ fun BottomNavigationBar(
             .padding(horizontal = 16.dp, vertical = 12.dp),
         shape = RoundedCornerShape(24.dp),
         shadowElevation = 8.dp,
-        tonalElevation = 3.dp
+        tonalElevation = 0.dp,
+        color = MaterialTheme.colorScheme.background
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(24.dp))
-                .background(MaterialTheme.colorScheme.surfaceContainer),
+                .background(MaterialTheme.colorScheme.background),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             items.forEach { item ->

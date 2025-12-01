@@ -10,4 +10,7 @@ interface CategoriesApiService {
     suspend fun getCategoriesByLevel(
         @Path("level") level: Int
     ): Response<List<CategoryDto>>
+
+    @GET("categories")
+    suspend fun getAllCategories(): Response<List<CategoryDto>>
 }

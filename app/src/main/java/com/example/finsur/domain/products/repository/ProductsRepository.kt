@@ -16,4 +16,5 @@ interface ProductsRepository {
     suspend fun searchProducts(query: String, page: Int = 1, limit: Int = 10): Result<List<Product>>
     suspend fun getProducts(page: Int = 1, limit: Int = 10): Result<PaginatedProducts>
     suspend fun getProductById(productId: Int): Result<Product>
+    suspend fun getProductsByCategory(categoryId: Int): Result<List<Product>>
 }

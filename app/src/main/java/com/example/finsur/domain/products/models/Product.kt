@@ -28,5 +28,6 @@ data class SKU(
     val salePrice: String?,
     val isActive: Boolean,
     val weight: String?,
-    val weightUnit: String?
+    val weightUnit: String?,
+    val totalStock: Int = 0
 )

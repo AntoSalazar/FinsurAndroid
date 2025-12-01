@@ -5,4 +5,5 @@ import com.example.finsur.domain.common.Result
 
 interface CategoriesRepository {
     suspend fun getCategoriesByLevel(level: Int): Result<List<Category>>
+    suspend fun getAllCategories(): Result<List<Category>>
 }

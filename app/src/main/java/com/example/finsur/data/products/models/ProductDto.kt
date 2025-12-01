@@ -45,7 +45,18 @@ data class SkuDto(
     val isActive: Boolean,
     val weight: String? = null,
     @SerialName("weight_unit")
-    val weightUnit: String? = null
+    val weightUnit: String? = null,
+    val inventoryItems: List<InventoryItemDto>? = null
+)
+
+@Serializable
+data class InventoryItemDto(
+    val id: Int,
+    @SerialName("sku_id")
+    val skuId: Int,
+    @SerialName("warehouse_id")
+    val warehouseId: Int,
+    val quantity: Int
 )
 
 @Serializable
