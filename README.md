@@ -34,8 +34,9 @@ This project follows **Clean Architecture** with clear separation of concerns:
 
 1. Clone the repository
 2. Open in Android Studio
-3. Update the base URL in `ApiConfig.kt` to point to your backend
-4. Build and run
+3. **Important:** This application currently does not have a deployed server-side backend. To run it, you will need to contact me to get the backend running via ngrok on my laptop.
+4. Update the base URL in `ApiConfig.kt` to point to your backend
+5. Build and run
 
 ## Project Structure
 
