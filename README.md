@@ -1,58 +1,58 @@
 # FinsurAndroid
 
-Finsur is a modern Android e-commerce application built with Jetpack Compose and Clean Architecture principles.
+Finsur es una aplicación de comercio electrónico moderna para Android construida con Jetpack Compose y principios de Arquitectura Limpia.
 
-## Features
+## Características
 
-- **Product Catalog**: Browse products with pagination and search functionality
-- **Product Details**: View detailed product information with beautiful UX
-- **Search**: Real-time product search with instant results
-- **Authentication**: Secure login and registration
-- **Shopping Cart**: Add products to cart (placeholder for now)
-- **User Profile**: Manage user account and preferences
+- **Catálogo de Productos**: Navega por los productos con paginación y funcionalidad de búsqueda
+- **Detalles del Producto**: Ve la información detallada del producto con una hermosa UX
+- **Búsqueda**: Búsqueda de productos en tiempo real con resultados instantáneos
+- **Autenticación**: Inicio de sesión y registro seguros
+- **Carrito de Compras**: Agrega productos al carrito (marcador de posición por ahora)
+- **Perfil de Usuario**: Administra la cuenta de usuario y las preferencias
 
-## Architecture
+## Arquitectura
 
-This project follows **Clean Architecture** with clear separation of concerns:
+Este proyecto sigue la **Arquitectura Limpia** con una clara separación de responsabilidades:
 
-- **Presentation Layer**: Jetpack Compose UI, ViewModels
-- **Domain Layer**: Business logic, Use Cases, Repository Interfaces
-- **Data Layer**: Repository Implementations, API Services, DTOs
-- **Core Layer**: Dependency Injection, Network Configuration
+- **Capa de Presentación**: UI de Jetpack Compose, ViewModels
+- **Capa de Dominio**: Lógica de negocio, Casos de Uso, Interfaces de Repositorio
+- **Capa de Datos**: Implementaciones de Repositorio, Servicios de API, DTOs
+- **Capa Núcleo**: Inyección de Dependencias, Configuración de Red
 
-## Tech Stack
+## Tecnologías
 
-- **Kotlin**: Primary programming language
-- **Jetpack Compose**: Modern UI toolkit
-- **Hilt**: Dependency injection
-- **Retrofit**: Network requests
-- **Coil**: Image loading
-- **Kotlin Coroutines & Flow**: Asynchronous programming
-- **Material 3**: Design system
+- **Kotlin**: Lenguaje de programación principal
+- **Jetpack Compose**: Kit de herramientas de UI moderno
+- **Hilt**: Inyección de dependencias
+- **Retrofit**: Solicitudes de red
+- **Coil**: Carga de imágenes
+- **Corrutinas y Flow de Kotlin**: Programación asíncrona
+- **Material 3**: Sistema de diseño
 
-## Setup
+## Configuración
 
-1. Clone the repository
-2. Open in Android Studio
-3. **Important:** This application currently does not have a deployed server-side backend. To run it, you will need to contact me to get the backend running via ngrok on my laptop.
-4. Update the base URL in `ApiConfig.kt` to point to your backend
-5. Build and run
+1. Clona el repositorio
+2. Ábrelo en Android Studio
+3. **Importante:** Actualmente, esta aplicación no tiene un backend de servidor desplegado. Para ejecutarla, deberás contactarme para que ejecute el backend a través de ngrok en mi computadora portátil.
+4. Actualiza la URL base en `ApiConfig.kt` para que apunte a tu backend
+5. Compila y ejecuta
 
-## Project Structure
+## Estructura del Proyecto
 
 ```
 app/src/main/java/com/example/finsur/
-├── core/                 # Core utilities & DI
-├── data/                 # Data layer (DTOs, API services, repositories)
-├── domain/               # Domain layer (models, use cases, repository interfaces)
-├── presentation/         # Presentation layer (UI, ViewModels)
-└── ui/theme/            # App theme
+├── core/                 # Utilidades principales e inyección de dependencias (DI)
+├── data/                 # Capa de datos (DTOs, servicios de API, repositorios)
+├── domain/               # Capa de dominio (modelos, casos de uso, interfaces de repositorio)
+├── presentation/         # Capa de presentación (UI, ViewModels)
+└── ui/theme/            # Tema de la aplicación
 ```
 
-## Contributing
+## Contribuciones
 
-This is a private project. Please contact the team for contribution guidelines.
+Este es un proyecto privado. Por favor, contacta al equipo para obtener las pautas de contribución.
 
-## License
+## Licencia
 
-Proprietary - All rights reserved
+Propietario - Todos los derechos reservados
